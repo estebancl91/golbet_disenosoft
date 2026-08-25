@@ -1,2 +1,2 @@
 # golbet_disenosoft
-Aplicacion Golbet de diseño de software
+Aplicación Golbet de diseño de Software
