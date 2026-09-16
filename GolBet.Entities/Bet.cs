@@ -19,6 +19,8 @@ public class Bet : AuditableEntity
     public BetStatus Status { get; set; } = BetStatus.Pending;
 
     public int MatchId { get; set; }
+
+    //Navigation Property
     public Match Match { get; set; } = null!;
 
     // Module 7 will add:  public string UserId  +  AppUser User

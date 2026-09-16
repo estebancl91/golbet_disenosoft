@@ -17,7 +17,12 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Team names must be unique
+        // Team names must be unique (case- and accent-insensitive)
+        modelBuilder.Entity<Team>()
+            .Property(t => t.Name)
+            .UseCollation("SQL_Latin1_General_CP1_CI_AI"); //Esta parte me indica el Sensitive Case
+
+
         modelBuilder.Entity<Team>()
             .HasIndex(t => t.Name)
             .IsUnique();
