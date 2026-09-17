@@ -1,12 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// GolBet.Services/Mapping/MappingProfile.cs
+using AutoMapper;
+using GolBet.Entities;
+using GolBet.Services.DTOs;
 
-namespace GolBet.Services.Mapping
+namespace GolBet.Services.Mapping;
+
+public class MappingProfile : Profile
 {
-    internal class MappingProfile
+    public MappingProfile()
     {
+        // Flattening by convention:
+        // MatchDto.HomeTeamName  <- Match.HomeTeam.Name
+        // MatchDto.AwayTeamCrestUrl <- Match.AwayTeam.CrestUrl
+        CreateMap<Match, MatchDto>();
     }
 }
