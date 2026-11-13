@@ -1,0 +1,67 @@
+﻿@model IEnumerable<GolBet.Services.DTOs.BetDto>
+
+@{
+    ViewData["Title"] = "Mis Apuestas";
+}
+
+<div class="container py-4">
+    <h2 class="mb-4">📋 Mis Apuestas Realizadas</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Aún no has registrado ninguna apuesta. Visita la <a asp-controller="Matches" asp-action="Index" class="alert-link">Cartelera de Partidos</a>.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive shadow-sm rounded">
+            <table class="table table-hover align-middle mb-0 bg-white">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Partido</th>
+                        <th>Selección</th>
+                        <th>Cuota Congelada</th>
+                        <th>Monto Apostado</th>
+                        <th>Ganancia Potencial</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var bet in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold">
+                                @bet.MatchHomeTeamName vs @bet.MatchAwayTeamName
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">@bet.Pick</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary fs-6">@bet.OddsAtPlacement.ToString("N2")</span>
+                            </td>
+                            <td>$@bet.Amount.ToString("N0") FutCoins</td>
+                            <td class="text-success fw-bold">
+                                $@bet.PotentialPayout.ToString("N0")
+                            </td>
+                            <td>
+                                @if (bet.Status.ToString() == "Pending")
+                                {
+                                    <span class="badge bg-warning text-dark">Pendiente</span>
+                                }
+                                else if (bet.Status.ToString() == "Won")
+                                {
+                                    <span class="badge bg-success">Ganada</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Perdida</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

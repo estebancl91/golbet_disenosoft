@@ -1,115 +1,127 @@
-﻿@* Views/Matches/Index.cshtml *@
-@using GolBet.Entities.Enums
-@using GolBet.Web.Helpers
+﻿@using GolBet.Entities.Enums
 @model IEnumerable<GolBet.Services.DTOs.MatchDto>
 
 @{
-    ViewData["Title"] = "Partidos";
-    var current = (MatchStatus?)ViewBag.CurrentStatus;
+    ViewData["Title"] = "Cartelera de Partidos";
+    var currentStatus = ViewBag.CurrentStatus as MatchStatus?;
+    var currentSearch = ViewBag.CurrentSearch as string;
+
+    string GetStatusDisplayName(MatchStatus status)
+    {
+        return status switch
+        {
+            MatchStatus.Scheduled => "Programado",
+            MatchStatus.InProgress => "En progreso",
+            MatchStatus.Finished => "Finalizado",
+            _ => status.ToString()
+        };
+    }
 }
 
-<!-- Cabecera con Título y Botón de Nuevo Partido -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>⚽ Cartelera de partidos</h2>
-    <a asp-action="Create" class="btn btn-success">
-        <i class="bi bi-plus-lg"></i> + Nuevo partido
-    </a>
-</div>
-
-<!-- Filtros de estado -->
-<div class="d-flex gap-2 flex-wrap mb-4">
-    <a asp-action="Index"
-       class="btn btn-sm @(current is null ? "btn-success" : "btn-outline-success")">
-        Todos
-    </a>
-    <a asp-action="Index" asp-route-status="@MatchStatus.Scheduled"
-       class="btn btn-sm @(current == MatchStatus.Scheduled ? "btn-success" : "btn-outline-success")">
-        Programados
-    </a>
-    <a asp-action="Index" asp-route-status="@MatchStatus.InProgress"
-       class="btn btn-sm @(current == MatchStatus.InProgress ? "btn-success" : "btn-outline-success")">
-        En juego
-    </a>
-    <a asp-action="Index" asp-route-status="@MatchStatus.Finished"
-       class="btn btn-sm @(current == MatchStatus.Finished ? "btn-success" : "btn-outline-success")">
-        Finalizados
-    </a>
-</div>
-
-<!-- Listado de Partidos (Cartelera) -->
-<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
-    @foreach (var match in Model)
-    {
-        <div class="col">
-            <div class="card h-100 shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <small class="text-muted">
-                        📅 @match.Date.ToColombiaTime().ToString("ddd dd MMM · h:mm tt")
-                    </small>
-                    @switch (match.Status)
-                    {
-                        case MatchStatus.Scheduled:
-                            <span class="badge bg-primary">Programado</span>
-                            break;
-                        case MatchStatus.InProgress:
-                            <span class="badge bg-warning text-dark">En juego</span>
-                            break;
-                        case MatchStatus.Finished:
-                            <span class="badge bg-secondary">Finalizado</span>
-                            break;
-                    }
-                </div>
-
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center text-center">
-                        <div class="w-100">
-                            <img src="@(match.HomeTeamCrestUrl ?? "https://placehold.co/60x60/e9ecef/6c757d?text=FC")"
-                                 alt="@match.HomeTeamName" width="60" height="60" class="mb-1" />
-                            <div class="fw-bold small">@match.HomeTeamName</div>
-                        </div>
-
-                        <div class="px-3 text-nowrap">
-                            @if (match.Status == MatchStatus.Finished)
-                            {
-                                <span class="fs-3 fw-bold">@match.HomeGoals - @match.AwayGoals</span>
-                            }
-                            else
-                            {
-                                <span class="fs-4 text-muted">vs</span>
-                            }
-                        </div>
-
-                        <div class="w-100">
-                            <img src="@(match.AwayTeamCrestUrl ?? "https://placehold.co/60x60?text=⚽")"
-                                 alt="@match.AwayTeamName" width="60" height="60" class="mb-1" />
-                            <div class="fw-bold small">@match.AwayTeamName</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-footer">
-                    <div class="row g-2 text-center">
-                        <div class="col">
-                            <div class="border rounded py-1">
-                                <small class="text-muted d-block">1 · Local</small>
-                                <span class="fw-bold">@match.HomeOdds.ToString("0.00")</span>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="border rounded py-1">
-                                <small class="text-muted d-block">X · Empate</small>
-                                <span class="fw-bold">@match.DrawOdds.ToString("0.00")</span>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="border rounded py-1">
-                                <small class="text-muted d-block">2 · Visitante</small>
-                                <span class="fw-bold">@match.AwayOdds.ToString("0.00")</span>
-                            </div>
-                        </div>
-                    </div>
+<div class="container mt-4">
+    <!-- Seccion de Busqueda y Filtros -->
+    <div class="card mb-4 shadow-sm border-0 bg-light p-3">
+        <form method="get" class="row g-2 align-items-center">
+            @if (currentStatus.HasValue)
+            {
+                <input type="hidden" name="status" value="@currentStatus" />
+            }
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" name="search" value="@currentSearch" class="form-control" placeholder="Buscar por equipo (ej. Nacional)..." />
+                    <button type="submit" class="btn btn-primary">Buscar</button>
                 </div>
             </div>
+            <div class="col-md-6 text-md-end">
+                <a asp-action="Index" asp-route-search="@currentSearch" class="btn btn-sm @(currentStatus == null ? "btn-primary" : "btn-outline-secondary")">Todos</a>
+                <a asp-action="Index" asp-route-status="@MatchStatus.Scheduled" asp-route-search="@currentSearch" class="btn btn-sm @(currentStatus == MatchStatus.Scheduled ? "btn-primary" : "btn-outline-secondary")">Programados</a>
+                <a asp-action="Index" asp-route-status="@MatchStatus.InProgress" asp-route-search="@currentSearch" class="btn btn-sm @(currentStatus == MatchStatus.InProgress ? "btn-primary" : "btn-outline-secondary")">En Vivo</a>
+                <a asp-action="Index" asp-route-status="@MatchStatus.Finished" asp-route-search="@currentSearch" class="btn btn-sm @(currentStatus == MatchStatus.Finished ? "btn-primary" : "btn-outline-secondary")">Finalizados</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Validacion: Sin Resultados -->
+    @if (!Model.Any())
+    {
+        <div class="alert alert-warning text-center p-4 shadow-sm">
+            <h4 class="alert-heading">No hay partidos para "@currentSearch"</h4>
+            <p class="mb-3">Intenta con otro término de búsqueda o regresa a la cartelera completa.</p>
+            <a asp-action="Index" class="btn btn-secondary">Volver a la cartelera de partidos</a>
+        </div>
+    }
+    else
+    {
+        <!-- Listado de Partidos en Tarjetas -->
+        <div class="row">
+            @foreach (var match in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm border rounded-3 overflow-hidden">
+
+                        <!-- Encabezado de la tarjeta: Fecha + Estado en Español -->
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center py-2 px-3 border-bottom-0">
+                            <small class="text-muted fw-semibold">
+                                📅 @match.Date.ToString("ddd dd MMM · h:mm tt", new System.Globalization.CultureInfo("es-CO"))
+                            </small>
+                            <span class="badge bg-primary px-2 py-1">@GetStatusDisplayName(match.Status)</span>
+                        </div>
+
+                        <!-- Cuerpo de la tarjeta: Escudos y Nombres de Equipos -->
+                        <div class="card-body py-3">
+                            <div class="row align-items-center text-center">
+                                <!-- Equipo Local -->
+                                <div class="col-5">
+                                    <img src="@match.HomeTeamCrestUrl" alt="@match.HomeTeamName" style="width: 65px; height: 65px; object-fit: contain;" class="mb-2" />
+                                    <div class="fw-bold text-dark small" style="line-height: 1.2;">@match.HomeTeamName</div>
+                                </div>
+
+                                <!-- Separador VS -->
+                                <div class="col-2 px-0">
+                                    <span class="text-muted fw-bold small">VS</span>
+                                </div>
+
+                                <!-- Equipo Visitante -->
+                                <div class="col-5">
+                                    <img src="@match.AwayTeamCrestUrl" alt="@match.AwayTeamName" style="width: 65px; height: 65px; object-fit: contain;" class="mb-2" />
+                                    <div class="fw-bold text-dark small" style="line-height: 1.2;">@match.AwayTeamName</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pie de la tarjeta: Cuotas de Apuesta + Boton Detalle -->
+                        <div class="card-footer bg-light border-top-0 p-3">
+                            <!-- Fila de Cuotas (1, X, 2) -->
+                            <div class="row g-2 text-center mb-2">
+                                <div class="col-4">
+                                    <div class="border rounded bg-white py-1">
+                                        <div class="text-muted extra-small" style="font-size: 0.75rem;">1 · Local</div>
+                                        <strong class="text-dark">@match.HomeOdds.ToString("F2")</strong>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="border rounded bg-white py-1">
+                                        <div class="text-muted extra-small" style="font-size: 0.75rem;">X · Empate</div>
+                                        <strong class="text-dark">@match.DrawOdds.ToString("F2")</strong>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="border rounded bg-white py-1">
+                                        <div class="text-muted extra-small" style="font-size: 0.75rem;">2 · Visitante</div>
+                                        <strong class="text-dark">@match.AwayOdds.ToString("F2")</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Boton Ver Detalle -->
+                            <a asp-action="Details" asp-route-id="@match.Id" class="btn btn-outline-secondary w-100 btn-sm bg-white">
+                                Ver detalle
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            }
         </div>
     }
 </div>

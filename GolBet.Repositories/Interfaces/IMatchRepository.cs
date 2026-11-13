@@ -6,4 +6,7 @@ namespace GolBet.Repositories.Interfaces;
 public interface IMatchRepository : IGenericRepository<Match>
 {
     Task<IEnumerable<Match>> GetAllWithTeamsAsync(MatchStatus? status = null, string? search = null);
+
+    // AGREGA ESTA LÍNEA: Firma para traer el partido con sus equipos
+    Task<Match?> GetByIdWithTeamsAsync(int id);
 }

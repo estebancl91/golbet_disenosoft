@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "y1B0FsashK8=",
+  "dgSpecHash": "n/49+WXjYg4=",
   "success": true,
-  "projectFilePath": "C:\\reposITM\\golbet_disenosoft\\GolBet.Repositories\\GolBet.Repositories.csproj",
+  "projectFilePath": "C:\\sync\\reposITM\\golbet_disenosoft\\GolBet.Repositories\\GolBet.Repositories.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\esteb\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\esteb\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

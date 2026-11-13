@@ -1,4 +1,36 @@
-﻿@page
-@model GolBet.Web.Views.Matches.EditModel
+﻿@model GolBet.Services.DTOs.MatchDto
 @{
+    ViewData["Title"] = "Editar Cuotas";
 }
+
+<div class="container mt-4">
+    <h2>Modificar Cuotas del Partido</h2>
+    <hr />
+
+    <form asp-action="Edit" method="post">
+        <!-- Campos ocultos necesarios para no perder la información al guardar -->
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="Date" />
+        <input type="hidden" asp-for="Status" />
+        <input type="hidden" asp-for="HomeGoals" />
+        <input type="hidden" asp-for="AwayGoals" />
+
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label asp-for="HomeOdds" class="form-label">Cuota Local</label>
+                <input asp-for="HomeOdds" class="form-control" type="number" step="0.01" />
+            </div>
+            <div class="col-md-4">
+                <label asp-for="DrawOdds" class="form-label">Cuota Empate</label>
+                <input asp-for="DrawOdds" class="form-control" type="number" step="0.01" />
+            </div>
+            <div class="col-md-4">
+                <label asp-for="AwayOdds" class="form-label">Cuota Visitante</label>
+                <input asp-for="AwayOdds" class="form-control" type="number" step="0.01" />
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success">Guardar Cambios</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>

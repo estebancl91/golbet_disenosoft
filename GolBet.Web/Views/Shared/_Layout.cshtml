@@ -1,4 +1,9 @@
-﻿<!<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using GolBet.Entities
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
@@ -10,28 +15,54 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-success border-bottom mb-3">
-            <div class="container">
-                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
-                    ⚽ GolBet
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#navbarMain" aria-controls="navbarMain"
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">GolBet</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="collapse navbar-collapse" id="navbarMain">
-                    <ul class="navbar-nav me-auto">
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">Inicio</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Inicio</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Matches" asp-action="Index">Partidos</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Teams" asp-action="Index">Equipos</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Matches" asp-action="Index">Cartelera</a>
                         </li>
                     </ul>
+
+                    <!-- SECCIÓN DINÁMICA DEL USUARIO Y SALDO EN VIVO -->
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        var currentUser = await UserManager.GetUserAsync(User);
+                        var userBalance = currentUser?.Balance ?? 0;
+
+                        <ul class="navbar-nav ms-auto align-items-center">
+                            <!-- Badge de Saldo en vivo -->
+                            <li class="nav-item me-3">
+                                <span class="badge bg-success fs-6 px-3 py-2">
+                                    💰 Saldo: $@userBalance.ToString("N0")
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Bets" asp-action="MyBets">Mis Apuestas</a>
+                            </li>
+                            <li class="nav-item">
+                                <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post">
+                                    <button type="submit" class="nav-link btn btn-link text-danger border-0">Cerrar Sesión</button>
+                                </form>
+                            </li>
+                        </ul>
+                    }
+                    else
+                    {
+                        <ul class="navbar-nav ms-auto">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Iniciar Sesión</a>
+                            </li>
+                        </ul>
+                    }
                 </div>
             </div>
         </nav>
@@ -39,14 +70,6 @@
 
     <div class="container">
         <main role="main" class="pb-3">
-            @if (TempData["Success"] is string message)
-            {
-                <div class="alert alert-success alert-dismissible fade show">
-                    ✅ @message
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            }
-
             @RenderBody()
         </main>
     </div>

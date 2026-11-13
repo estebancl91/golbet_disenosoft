@@ -1,112 +1,77 @@
-﻿using GolBet.Services.DTOs;
+﻿using AutoMapper;
+using GolBet.Entities.Enums;
+using GolBet.Services.DTOs;
 using GolBet.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Threading.Tasks;
 
-namespace GolBet.Web.Controllers;
-
-public class MatchesController : Controller
+namespace GolBet.Web.Controllers
 {
-    private readonly IMatchService _matchService;
-    private readonly ITeamService _teamService;
-
-    public MatchesController(IMatchService matchService, ITeamService teamService)
+    public class MatchesController : Controller
     {
-        _matchService = matchService;
-        _teamService = teamService;
-    }
+        private readonly IMatchService _matchService;
+        private readonly IMapper _mapper;
 
-    // GET /Matches
-    public async Task<IActionResult> Index()
-    {
-        var board = await _matchService.GetBoardAsync();
-        return View(board);
-    }
-
-    // GET /Matches/Details/5
-    public async Task<IActionResult> Details(int id)
-    {
-        var detail = await _matchService.GetDetailAsync(id);
-        if (detail is null) return NotFound();
-        return View(detail);
-    }
-
-    // GET /Matches/Create
-    public async Task<IActionResult> Create()
-    {
-        await LoadTeamsAsync();
-        return View(new MatchFormDto());
-    }
-
-    [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(MatchFormDto dto)
-    {
-        if (!ModelState.IsValid)
+        public MatchesController(IMatchService matchService, IMapper mapper)
         {
-            await LoadTeamsAsync();
-            return View(dto);
+            _matchService = matchService;
+            _mapper = mapper;
         }
 
-        try
+        // GET: /Matches
+        public async Task<IActionResult> Index(MatchStatus? status, string search)
         {
-            await _matchService.CreateAsync(dto);
-            TempData["Success"] = "Partido creado correctamente.";
-            return RedirectToAction(nameof(Index));
-        }
-        catch (InvalidOperationException ex) // business rule violated
-        {
-            ModelState.AddModelError(string.Empty, ex.Message);
-            await LoadTeamsAsync();
-            return View(dto);
-        }
-    }
+            var matches = await _matchService.GetAllWithTeamsAsync(status, search);
 
-    // GET /Matches/Edit/5
-    public async Task<IActionResult> Edit(int id)
-    {
-        var dto = await _matchService.GetForEditAsync(id);
-        if (dto is null) return NotFound();
+            // Compartir con la vista para mantener la persistencia visual
+            ViewBag.CurrentStatus = status;
+            ViewBag.CurrentSearch = search;
 
-        await LoadTeamsAsync(); // the form needs the dropdowns too
-        return View(dto);
-    }
-
-    // POST /Matches/Edit
-    [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(MatchFormDto dto)
-    {
-        if (!ModelState.IsValid)
-        {
-            await LoadTeamsAsync();
-            return View(dto);
+            return View(matches);
         }
 
-        try
+        // GET: /Matches/Details/5
+        public async Task<IActionResult> Details(int id)
         {
-            await _matchService.UpdateAsync(dto);
-            TempData["Success"] = "Partido actualizado correctamente.";
-            return RedirectToAction(nameof(Index));
+            // AHORA SÍ: Usamos el método que trae los equipos para que aparezcan junto al "VS"
+            var match = await _matchService.GetByIdWithTeamsAsync(id);
+
+            if (match == null)
+            {
+                return NotFound();
+            }
+
+            // Mapeo al DTO que exige la vista
+            var matchDetail = _mapper.Map<MatchDetailDto>(match);
+
+            return View(matchDetail);
         }
-        catch (InvalidOperationException ex) // business rule violated
+
+        // GET: /Matches/Edit/5
+        public async Task<IActionResult> Edit(int id)
         {
-            ModelState.AddModelError(string.Empty, ex.Message);
-            await LoadTeamsAsync();
-            return View(dto);
+            var match = await _matchService.GetByIdAsync(id);
+            if (match == null) return NotFound();
+
+            // Si tu vista Edit.cshtml exige explícitamente un MatchFormDto, descomenta estas dos líneas y borra el return View(match):
+            // var matchForm = _mapper.Map<MatchFormDto>(match);
+            // return View(matchForm);
+
+            return View(match);
         }
-    }
 
-    // POST /Matches/Deactivate/5
-    [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Deactivate(int id)
-    {
-        await _matchService.DeactivateAsync(id);
-        TempData["Success"] = "Partido desactivado.";
-        return RedirectToAction(nameof(Index));
-    }
-
-    private async Task LoadTeamsAsync()
-    {
-        var teams = await _teamService.GetAllAsync();
-        ViewBag.Teams = new SelectList(teams, "Id", "Name");
+        // POST: /Matches/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, MatchDto matchDto)
+        {
+            if (ModelState.IsValid)
+            {
+                // Guarda los cambios de la nueva cuota
+                await _matchService.UpdateAsync(matchDto);
+                return RedirectToAction(nameof(Index));
+            }
+            return View(matchDto);
+        }
     }
 }

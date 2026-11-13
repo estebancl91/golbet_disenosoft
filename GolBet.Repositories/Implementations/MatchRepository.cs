@@ -19,13 +19,11 @@ public class MatchRepository : GenericRepository<Match>, IMatchRepository
             .Include(m => m.AwayTeam)
             .AsQueryable();
 
-        
         if (status.HasValue)
         {
             query = query.Where(m => m.Status == status.Value);
         }
 
-        
         if (!string.IsNullOrWhiteSpace(search))
         {
             var term = search.Trim();
@@ -33,5 +31,14 @@ public class MatchRepository : GenericRepository<Match>, IMatchRepository
         }
 
         return await query.ToListAsync();
+    }
+
+    // NUEVO MÉTODO: Trae el partido específico incluyendo los nombres de los equipos prueba
+    public async Task<Match?> GetByIdWithTeamsAsync(int id)
+    {
+        return await _context.Matches
+            .Include(m => m.HomeTeam)
+            .Include(m => m.AwayTeam)
+            .FirstOrDefaultAsync(m => m.Id == id);
     }
 }

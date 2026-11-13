@@ -1,24 +1,18 @@
-﻿// GolBet.Services/Interfaces/IMatchService.cs
-using GolBet.Entities.Enums;
+﻿using GolBet.Entities.Enums;
 using GolBet.Services.DTOs;
- 
-namespace GolBet.Services.Interfaces;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-
-
-
-public interface IMatchService
+namespace GolBet.Services.Interfaces
 {
-    /// <summary>Match board: all active matches ordered by date.</summary>
-    Task<IEnumerable<MatchDto>> GetBoardAsync(MatchStatus? status = null);
+    public interface IMatchService
+    {
+        // Métodos que ya tenías
+        Task<IEnumerable<MatchDto>> GetAllWithTeamsAsync(MatchStatus? status = null, string? search = null);
+        Task<MatchDto> GetByIdAsync(int id);
 
-    Task<MatchDetailDto?> GetDetailAsync(int id);
-
-    Task<MatchFormDto?> GetForEditAsync(int id);
-    Task CreateAsync(MatchFormDto dto);
-    Task UpdateAsync(MatchFormDto dto);
-    Task DeactivateAsync(int id);
-
+        // Métodos NUEVOS que pide el controlador
+        Task<MatchDto> GetByIdWithTeamsAsync(int id);
+        Task UpdateAsync(MatchDto matchDto);
+    }
 }
-
-
